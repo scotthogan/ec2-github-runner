@@ -3,6 +3,10 @@ const github = require('@actions/github');
 const _ = require('lodash');
 const config = require('./config');
 
+const PAGE_SIZE = 30;
+
+const stringify = (obj) => JSON.stringify(obj, null, 2);
+
 // use the unique label to find the runner
 // as we don't have the runner's id, it's not possible to get it in any other way
 async function getRunner(label) {
@@ -10,18 +14,29 @@ async function getRunner(label) {
   const octokit = github.getOctokit(config.input.githubToken);
 
   try {
-    const runners = await octokit.paginate(
-      'GET /repos/{owner}/{repo}/actions/runners',
-      config.githubContext,
-    );
+    const runners = [];
+    let done = false;
+    while (!done) {
+      core.info('Sending a request to get runners from GitHub.');
+      const response = await octokit.request(
+        'GET /repos/{owner}/{repo}/actions/runners',
+        config.githubContext,
+      );
+      core.info(
+        `Received ${response.data.runners.length} runners from GitHub.`,
+      );
+      core.info(`Response headers: ${stringify(response.headers)}`);
+      runners.push(...response.data.runners);
+      done = response.data.runners.length < PAGE_SIZE;
+    }
     core.info(
-      `Received ${runners.length} runners from GitHub for this repository.`,
+      `Got ${runners.length} runners in total from GitHub for this repository.`,
     );
-    core.debug(`All runners:\n${JSON.stringify(runners, null, 2)}`);
+    core.info(`All runners:\n${stringify(runners)}`);
     const foundRunners = _.filter(runners, { labels: [{ name: label }] });
     const ret = foundRunners.length > 0 ? foundRunners[0] : null;
-    core.info(`Original found result: ${ret}`)
-    return ret
+    core.info(`Found result: ${stringify(ret)}`);
+    return ret;
   } catch (error) {
     return null;
   }
