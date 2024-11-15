@@ -16,18 +16,18 @@ async function getRunner(label) {
   try {
     const runners = [];
     let done = false;
+    let page = 1;
     while (!done) {
-      core.info('Sending a request to get runners from GitHub.');
-      const response = await octokit.request(
-        'GET /repos/{owner}/{repo}/actions/runners',
-        config.githubContext,
-      );
+      const route = `GET /repos/{owner}/{repo}/actions/runners?per_page=${PAGE_SIZE}&page=${page}`;
+      core.info(`Sending request: ${route}`);
+      const response = await octokit.request(route, config.githubContext);
       core.info(
         `Received ${response.data.runners.length} runners from GitHub.`,
       );
       core.info(`Response headers: ${stringify(response.headers)}`);
       runners.push(...response.data.runners);
       done = response.data.runners.length < PAGE_SIZE;
+      page++;
     }
     core.info(
       `Got ${runners.length} runners in total from GitHub for this repository.`,

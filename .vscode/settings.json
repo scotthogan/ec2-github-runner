@@ -4,5 +4,10 @@
   "[javascript]": {
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "workbench.colorCustomizations": {
+    "activityBar.background": "#0A2F4F",
+    "titleBar.activeBackground": "#0D426F",
+    "titleBar.activeForeground": "#F9FCFE"
   }
 }
