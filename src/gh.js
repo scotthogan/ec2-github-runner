@@ -3,7 +3,7 @@ const github = require('@actions/github');
 const _ = require('lodash');
 const config = require('./config');
 
-const PAGE_SIZE = 30;
+const PAGE_SIZE = 100;
 
 const stringify = (obj) => JSON.stringify(obj, null, 2);
 
